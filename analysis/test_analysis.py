@@ -1,5 +1,6 @@
 from pandas_test.analysis.analysis import load_ncdhhs_data
 from pandas_test.analysis.analysis import aggregate_weekly
+from pandas_test.analysis.analysis import dataframe_ordinary_least_squares
 import pandas as pd
 
 in_file1 = "./analysis/test_data/TABLE_DAILY_TESTING_METRICS.csv"
@@ -31,3 +32,11 @@ def test_aggregate_weekly():
 	df1 = aggregate_weekly(df, 'Total')
 	diff = df1.index[1] - df1.index[0]
 	assert diff.days == 7
+
+def test_dataframe_ordinary_least_squares():
+	df = load_ncdhhs_data(in_file1, headers1)
+	df1 = aggregate_weekly(df, 'Total')
+	dataframe_ordinary_least_squares(df1, y_col_name='Total', x_col_name='Week')
+
+	assert True
+

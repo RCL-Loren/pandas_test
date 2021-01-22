@@ -1,4 +1,8 @@
+import numpy as np
 import pandas as pd
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+from statsmodels.sandbox.regression.predstd import wls_prediction_std
 
 def load_ncdhhs_data(data_filename , headings=[]):
 	#NC DHHS has data set to download as UTF16 LE BOM
@@ -15,6 +19,7 @@ def load_ncdhhs_data(data_filename , headings=[]):
 
 	return df
 
+
 def aggregate_weekly(daily_testing_df, column_name):
 	"""Extract a column, resample to weekly, and add an integer reference"""
 
@@ -29,3 +34,27 @@ def aggregate_weekly(daily_testing_df, column_name):
 	df_test_vol['Week'] = range(1,len(df_test_vol) + 1)
 
 	return df_test_vol[:-1]
+
+
+def dataframe_ordinary_least_squares(dataframe_in, x_col_name, y_col_name):
+
+	x = dataframe_in[x_col_name].to_numpy()
+	X =sm.add_constant(x)
+	X = np.array(X, dtype=float)
+	y = dataframe_in[y_col_name].to_numpy()
+
+	model = sm.OLS(y, X)
+	results = model.fit()
+	#print(results.summary())
+	#print(results.fittedvalues)
+
+	prstd, iv_l, iv_u = wls_prediction_std(results)
+
+	fig, ax = plt.subplots()
+	ax.scatter(x, y, label="Test Volume")
+	ax.plot(x, results.fittedvalues, 'b--.', label="Ordinary Least Squares Regression")
+	ax.plot(x, iv_u,'r:')
+	ax.plot(x, iv_l,'r:')
+
+	plt.show()
+
