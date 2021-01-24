@@ -35,7 +35,7 @@ def aggregate_weekly(daily_testing_df, column_name):
 	return df_test_vol[:-1]
 
 
-def dataframe_ordinary_least_squares(dataframe_in, x_col_name, y_col_name):
+def dataframe_ordinary_least_squares(dataframe_in, x_col_name, y_col_name, showplot=False):
 
 	x = dataframe_in[x_col_name].to_numpy()
 	X =sm.add_constant(x)
@@ -45,21 +45,20 @@ def dataframe_ordinary_least_squares(dataframe_in, x_col_name, y_col_name):
 	model = sm.OLS(y, X)
 	results = model.fit()
 
-	print(results.summary())
-
 	prstd, iv_l, iv_u = wls_prediction_std(results)
 
 	dataframe_in['OLS Values'] = results.fittedvalues
 	dataframe_in['Confidence Upper'] = iv_u
 	dataframe_in['Confidence Lower'] = iv_l
 
-	fig, ax = plt.subplots()
-	ax.scatter(x, y, color="#778899", label="Test Volume")
-	ax.plot(x, dataframe_in['OLS Values'],".--",color="#4682B4", label="Ordinary Least Squares Regression")
-	ax.plot(x, iv_u,color="#F08080",ls=":")
-	ax.plot(x, iv_l,color="#F08080",ls=":")
-
-	plt.show()
+	if (showplot == True ):
+		print(results.summary())
+		fig, ax = plt.subplots()
+		ax.scatter(x, y, color="#778899", label="Test Volume")
+		ax.plot(x, dataframe_in['OLS Values'],".--",color="#4682B4", label="Ordinary Least Squares Regression")
+		ax.plot(x, iv_u,color="#F08080",ls=":")
+		ax.plot(x, iv_l,color="#F08080",ls=":")
+		plt.show()
 
 def dataframe_lowess(dataframe_in, x_col_name, y_col_name, showplot=False):
 	x = dataframe_in[x_col_name].to_numpy()
