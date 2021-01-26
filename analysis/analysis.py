@@ -4,7 +4,7 @@ import statsmodels.api as sm
 import matplotlib.pyplot as plt
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
 
-def load_ncdhhs_data(data_filename , headings=[]):
+def load_ncdhhs_data(data_filename , headings=[], show_table=False):
 	#NC DHHS has data set to download as UTF16 LE BOM
 	df = pd.read_csv(data_filename,
 	                             encoding = "utf16",
@@ -16,10 +16,14 @@ def load_ncdhhs_data(data_filename , headings=[]):
 
 	if len(headings)>0:
 		df.columns = headings
+
+	if show_table:
+		print(df)
+
 	return df
 
 
-def aggregate_weekly(daily_testing_df, column_name):
+def aggregate_weekly(daily_testing_df, column_name, show_table=False):
 	"""Extract a column, resample to weekly, and add an integer reference"""
 
 	# Create new dataframe with only Total Tests and drop rows missing values
@@ -31,6 +35,9 @@ def aggregate_weekly(daily_testing_df, column_name):
 
 	# Create a sequence of integers to reference as week from start
 	df_test_vol['Week'] = range(1,len(df_test_vol) + 1)
+
+	if show_table:
+		print(df_test_vol)
 
 	return df_test_vol[:-1]
 
@@ -60,21 +67,24 @@ def dataframe_ordinary_least_squares(dataframe_in, x_col_name, y_col_name, showp
 		ax.plot(x, iv_l,color="#F08080",ls=":")
 		plt.show()
 
-def dataframe_lowess(dataframe_in, x_col_name, y_col_name, showplot=False):
+def dataframe_lowess(dataframe_in, x_col_name, y_col_name, frac_in=1, it_in=0, show_plot=False, show_table=True):
 	x = dataframe_in[x_col_name].to_numpy()
 	y = dataframe_in[y_col_name].to_numpy()
 
 	lowess = sm.nonparametric.lowess
 
-	z = lowess(y, x, return_sorted=False)
+	z = lowess(y, x, frac=frac_in, it=it_in, return_sorted=False)
 
 	dataframe_in['LOWESS'] = z
 
-	if (showplot == True ):
+	if (show_plot == True ):
 		fig, ax = plt.subplots()
 		ax.scatter(x, y, marker="+",color="#ADD8E6", label="Test Volume")
 		ax.plot(x, z,".--",color="#4682B4", label="LOWESS")
 		plt.show()
+
+	if show_table:
+		print(dataframe_in)
 
 	return dataframe_in
 

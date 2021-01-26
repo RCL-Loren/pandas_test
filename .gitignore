@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Local File Excludes
+# Scratch File for cut and paste / temp saving of snippets
+scratch.py

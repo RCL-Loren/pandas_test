@@ -39,11 +39,11 @@ def test_dataframe_ordinary_least_squares():
 	df1 = aggregate_weekly(df, 'Total')
 	dataframe_ordinary_least_squares(df1, y_col_name='Total',
 										x_col_name='Week',
-										showplot=True)
+										showplot=False)
 	assert True
 
 def test_dataframe_lowess():
 	df = load_ncdhhs_data(in_file1, headers1)
 	df1 = aggregate_weekly(df, 'Total')
-	dataframe_lowess(df1, y_col_name='Total', x_col_name='Week', showplot=True)
+	dataframe_lowess(df1, y_col_name='Total', x_col_name='Week', show_plot=False, show_table=False)
 	assert True
