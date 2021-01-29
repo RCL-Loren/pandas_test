@@ -131,3 +131,6 @@ dmypy.json
 # Local File Excludes
 # Scratch File for cut and paste / temp saving of snippets
 scratch.py
+
+# Image Files - we don't want to commit matplotlib images
+*.png

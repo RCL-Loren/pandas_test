@@ -164,11 +164,11 @@ def plot_adj_cases(adj_cases_df):
 def main():
 	print(__name__)
 
-	#plot_test_vol(get_test_vol())
+	plot_test_vol(get_test_vol())
 
 	#plot_raw_adj_cases(case_vol_adj(), get_cases())
 
-	plot_adj_cases(case_vol_adj())
+	#plot_adj_cases(case_vol_adj())
 
 
 
