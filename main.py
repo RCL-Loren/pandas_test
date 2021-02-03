@@ -147,7 +147,7 @@ def plot_adj_cases(adj_cases_df):
             xytext=(0.3, 0.3), textcoords='figure fraction',size=8,
             arrowprops=dict(arrowstyle="->"))
 
-	ax.annotate('Respitory\nVirus\nSeason',
+	ax.annotate('Respiratory\nVirus\nSeason',
             xy=(0.825,0.62), xycoords='figure fraction',
             xytext=(0.6, 0.8), textcoords='figure fraction',size=8,
             arrowprops=dict(arrowstyle="->"))
@@ -164,11 +164,11 @@ def plot_adj_cases(adj_cases_df):
 def main():
 	print(__name__)
 
-	plot_test_vol(get_test_vol())
+	#plot_test_vol(get_test_vol())
 
 	#plot_raw_adj_cases(case_vol_adj(), get_cases())
 
-	#plot_adj_cases(case_vol_adj())
+	plot_adj_cases(case_vol_adj())
 
 
 

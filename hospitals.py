@@ -2,6 +2,7 @@ from analysis.analysis import load_ncdhhs_data
 from analysis.analysis import aggregate_weekly
 from analysis.analysis import dataframe_lowess
 from analysis.ftstyle import FtStyle
+from main import case_vol_adj
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -74,20 +75,70 @@ def plot_hospitalizations():
 	style = FtStyle()
 	fig, ax = style.set_plt_rc(plt).subplots()
 	plt.xticks(rotation=70)
-	ax.scatter(hospitalized_df['DateString'], hospitalized_df['Hospitalizations'], marker="+", color="LightGrey", label="Hospitalizations")
-	ax.plot(hospitalized_df['DateString'], hospitalized_df['LOWESS'],"--",color="#7D062E", label="Hospitalizations (LOWESS)")
+	ax.scatter(hospitalized_df['DateString'], hospitalized_df['Hospitalizations'], marker="+", color="LightGrey", label="COVID-19 Hospitalized")
+	ax.plot(hospitalized_df['DateString'], hospitalized_df['LOWESS'],"--",color="#7D062E", label="COVID-19 Hospitalized (LOWESS)")
 	
 
 	left = -0.06
-	ax.text(0.0, 1.07, 'NC DHHS Daily Hospitalizations',
+	ax.text(0.0, 1.07, 'NC DHHS COVID-19 Hospitalized - Statewide',
 				ha='left', va='center', transform=ax.transAxes, color="k")
 
-	ax.legend(loc='lower right');
+	ax.legend(loc='upper left')
 	ax.xaxis.set_label_coords(0.5, -0.2)
 	ax.yaxis.set_label_coords(-0.15, 0.5)
-	ax.set_ylabel("Hospitalizations")
+	ax.set_ylabel("Hospitalized")
 
-	plt.savefig("Hospitalizations.png", dpi=300)
+	plt.savefig("Hospitalized.png", dpi=300)
+
+	plt.show()
+
+
+def plot_icu():
+	icu_df = get_hospital_metrics(show_plot=False, col_select="ICU")
+
+	style = FtStyle()
+	fig, ax = style.set_plt_rc(plt).subplots()
+	plt.xticks(rotation=70)
+	ax.scatter(icu_df['DateString'], icu_df['ICU'], marker="+", color="LightGrey", label="COVID-19 ICU")
+	ax.plot(icu_df['DateString'], icu_df['LOWESS'],"--",color="#7D062E", label="COVID-19 ICU (LOWESS)")
+	
+
+	left = -0.06
+	ax.text(0.0, 1.07, 'NC DHHS COVID-19 ICU- Statewide',
+				ha='left', va='center', transform=ax.transAxes, color="k")
+
+	ax.legend(loc='upper left')
+	ax.xaxis.set_label_coords(0.5, -0.2)
+	ax.yaxis.set_label_coords(-0.15, 0.5)
+	ax.set_ylabel("COVID-19 ICU")
+
+	plt.savefig("covid19_icu.png", dpi=300)
+
+	plt.show()
+
+def plot_inpatient_vs_icu():
+	hospitalized_df = get_hospital_metrics(show_plot=False, 
+											col_select="Hospitalizations")
+	
+	icu_df = get_hospital_metrics(show_plot=False, col_select="ICU")
+
+	style = FtStyle()
+	fig, ax = style.set_plt_rc(plt).subplots()
+	plt.xticks(rotation=70)
+	ax.plot(hospitalized_df['DateString'], hospitalized_df['LOWESS'],"--",color="#0F56B5", label="COVID-19 Hospitalized (LOWESS)")
+	ax.plot(icu_df['DateString'], icu_df['LOWESS'],"--",color="#7D062E", label="COVID-19 ICU (LOWESS)")
+		
+
+	left = -0.06
+	ax.text(0.0, 1.07, 'NC DHHS COVID-19 Inpatient vs. ICU - Statewide',
+				ha='left', va='center', transform=ax.transAxes, color="k")
+
+	ax.legend(loc='upper left')
+	ax.xaxis.set_label_coords(0.5, -0.2)
+	ax.yaxis.set_label_coords(-0.15, 0.5)
+	ax.set_ylabel("Beds")
+
+	plt.savefig("inpatient_vs_icu.png", dpi=300)
 
 	plt.show()
 
@@ -117,7 +168,7 @@ def plot_bed_context():
 					alpha=0.4)	
 
 	left = -0.06
-	ax.text(0.0, 1.07, 'NC DHHS COVID19 Hospitalizations vs. Bed Census',
+	ax.text(0.0, 1.07, 'NC DHHS Hospitalized with COVID-19 vs. Bed Census',
 				ha='left', va='center', transform=ax.transAxes, color="k")
 
 	ax.legend(loc='upper left');
@@ -165,11 +216,38 @@ def plot_ICU_context():
 	plt.savefig("ICUBeds.png", dpi=300)
 	plt.show()
 
+def compare_icu_voladj():
+	adj_cases = case_vol_adj()
+
+	icu_df = get_hospital_metrics(show_plot=False, col_select="ICU")
+
+	style = FtStyle()
+	fig, ax = style.set_plt_rc(plt).subplots()
+	plt.xticks(rotation=70)
+	ax.plot(adj_cases['DateString'], adj_cases['LOWESS'],"--",color="#0F56B5", label="Volume Adjusted Cases (LOWESS)")
+	ax.plot(icu_df['DateString'], icu_df['LOWESS'],"--",color="#7D062E", label="COVID-19 ICU (LOWESS)")
+		
+
+	left = -0.06
+	ax.text(0.0, 1.07, 'NC DHHS Volume Adjusted Cases vs. COVID-19 ICU',
+				ha='left', va='center', transform=ax.transAxes, color="k")
+
+	ax.legend(loc='upper left')
+	ax.xaxis.set_label_coords(0.5, -0.2)
+	ax.yaxis.set_label_coords(-0.15, 0.5)
+	ax.set_ylabel("Cases or Beds")
+
+	plt.savefig("adj_cases_icu.png", dpi=300)
+
+	plt.show()
 
 if __name__ == "__main__":
 	# execute only if run as a script
 	#plot_hospitalizations()
+	#plot_icu()
+	#plot_inpatient_vs_icu()
 	#plot_bed_context()
-	plot_ICU_context()
+	#plot_ICU_context()
+	compare_icu_voladj()
 
 
