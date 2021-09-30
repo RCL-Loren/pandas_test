@@ -10,7 +10,7 @@ import seaborn as sns
 
 def get_hospital_metrics(show_plot=False, col_select="Hospitalizations"):
 	hospital_metrics_file = "./data/HOSPITAL_METRICS_STATE.csv"
-	hospital_metrics_headers = ["Hospitalizations", "ICU", "Suspected", "Confirmed"]
+	hospital_metrics_headers = ["Hospitalizations", "ICU", "Confirmed", "Suspected"]
 
 	hospital_metrics_daily_df = load_ncdhhs_data(hospital_metrics_file,
 												hospital_metrics_headers,
@@ -158,7 +158,7 @@ def plot_bed_context():
 	fig, ax = style.set_plt_rc(plt).subplots()
 	plt.xticks(rotation=70)
 
-	ax.plot(hospitalized_df['DateString'], hospitalized_df['LOWESS'],".--",color="#7D062E", label="COVID19 Inpatients")
+	ax.plot(hospitalized_df['DateString'], hospitalized_df['LOWESS'],"--",color="#7D062E", label="COVID19 Inpatients")
 	ax.stackplot(beds_in_use['DateString'], 
 					beds_in_use['LOWESS'], 
 					beds_empty['LOWESS'],
@@ -195,7 +195,7 @@ def plot_ICU_context():
 	fig, ax = style.set_plt_rc(plt).subplots()
 	plt.xticks(rotation=70)
 
-	ax.plot(ICU_df['DateString'], ICU_df['LOWESS'],".--",color="#7D062E", label="COVID19 ICU Patients")
+	ax.plot(ICU_df['DateString'], ICU_df['LOWESS'],"--",color="#7D062E", label="COVID19 ICU Patients")
 	ax.stackplot(ICU_in_use['DateString'], 
 					ICU_in_use['LOWESS'], 
 					ICU_empty['LOWESS'],
@@ -243,11 +243,11 @@ def compare_icu_voladj():
 
 if __name__ == "__main__":
 	# execute only if run as a script
-	#plot_hospitalizations()
-	#plot_icu()
-	#plot_inpatient_vs_icu()
-	#plot_bed_context()
-	#plot_ICU_context()
+	plot_hospitalizations()
+	plot_icu()
+	plot_inpatient_vs_icu()
+	plot_bed_context()
+	plot_ICU_context()
 	compare_icu_voladj()
 
 

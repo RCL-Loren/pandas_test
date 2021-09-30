@@ -6,7 +6,7 @@ from analysis.ftstyle import FtStyle
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def get_test_vol(show_plot=False):
+def get_test_vol(show_plot=False, show_table=False):
 	test_metrics_file = "./data/TABLE_DAILY_TESTING_METRICS.csv"
 	test_metrics_headers = ["Total", "PCR_Tests", "Antigen_Tests", "Pos_Percent"]
 
@@ -20,7 +20,7 @@ def get_test_vol(show_plot=False):
 	test_metrics_lowess_df = dataframe_lowess(test_metrics_weekly_df,
 												y_col_name='Total',
 												x_col_name='Week',
-												frac_in=0.5,
+												frac_in=0.1,
 												show_plot=show_plot,
 												show_table=False)
 
@@ -30,9 +30,12 @@ def get_test_vol(show_plot=False):
 	adj_index.strftime('% B % d, % Y, % r')
 	test_metrics_lowess_df['DateString'] = adj_index
 
+	if show_table:
+		print(test_metrics_lowess_df)
+
 	return test_metrics_lowess_df
 
-def get_cases(show_plot=False):
+def get_cases(show_plot=False, show_table=False):
 	cases_deaths_file = "./data/TABLE_DAILY_CASE&DEATHS_METRICS.csv"
 	cases_deaths_headers = ["Cases", "PCR", "Antigen", "Deaths"]
 	cases_deaths_daily_df = load_ncdhhs_data(cases_deaths_file,
@@ -58,7 +61,50 @@ def get_cases(show_plot=False):
 	adj_index.strftime('% B % d, % Y, % r')
 	cases_lowess_df['DateString'] = adj_index
 
+	if show_table:
+		print(cases_lowess_df)
+
 	return cases_lowess_df
+
+def get_case_per_thousand(show_plot=False, show_table=False):
+
+	cases_df = get_cases()
+
+	tests_df = get_test_vol()
+
+	cases_df['Per Thousand'] = cases_df['Cases']/(tests_df['Total']/1000)
+	
+	return cases_df
+
+def get_deaths(show_plot=False, show_table=False):
+	cases_deaths_file = "./data/TABLE_DAILY_CASE&DEATHS_METRICS.csv"
+	cases_deaths_headers = ["Cases", "PCR", "Antigen", "Deaths"]
+	cases_deaths_daily_df = load_ncdhhs_data(cases_deaths_file,
+												cases_deaths_headers,
+												show_table=show_table)
+
+	deaths_weekly_df = aggregate_weekly(cases_deaths_daily_df, 'Deaths',
+												show_table=show_table)
+
+	deaths_lowess_df = dataframe_lowess(deaths_weekly_df,
+												y_col_name='Deaths',
+												x_col_name='Week',
+												frac_in= 0.2,
+												it_in=0,
+												show_plot=show_plot,
+												show_table=show_table)
+	deaths_lowess_df=deaths_lowess_df.drop(deaths_lowess_df.index[[0,1]])
+
+	deaths_lowess_df['Week'] = range(1,len(deaths_lowess_df) + 1)
+
+	adj_index = deaths_lowess_df.index
+	adj_index.strftime('% B % d, % Y, % r')
+	deaths_lowess_df['DateString'] = adj_index
+
+	if show_table:
+		print(deaths_lowess_df)
+
+	return (deaths_lowess_df)
 
 def case_vol_adj():
 	test_vol_smoothed = get_test_vol(show_plot=False)
@@ -72,7 +118,7 @@ def case_vol_adj():
 	adj_cases_smoothed = dataframe_lowess(raw_cases_smoothed,
 												y_col_name='Adjusted',
 												x_col_name='Week',
-												frac_in= 0.2,
+												frac_in= 0.11,
 												it_in=0,
 												show_plot=False,
 												show_table=False)
@@ -137,40 +183,83 @@ def plot_adj_cases(adj_cases_df):
 	ax.text(0.0, 1.07, 'NC DHHS Volume Adjusted Case Count',
 				ha='left', va='center', transform=ax.transAxes, color="k")
 
-	ax.legend(loc='lower right');
+	ax.legend(loc='upper left');
 	ax.xaxis.set_label_coords(0.5, -0.2)
 	ax.yaxis.set_label_coords(-0.15, 0.5)
 	ax.set_ylabel("Volume Adjusted Cases")
 
-	ax.annotate('Testing\nRamp',
-            xy=(0.24,0.42), xycoords='figure fraction',
-            xytext=(0.3, 0.3), textcoords='figure fraction',size=8,
-            arrowprops=dict(arrowstyle="->"))
+	# ax.annotate('Testing\nRamp',
+ #            xy=(0.24,0.42), xycoords='figure fraction',
+ #            xytext=(0.3, 0.3), textcoords='figure fraction',size=8,
+ #            arrowprops=dict(arrowstyle="->"))
 
-	ax.annotate('Respiratory\nVirus\nSeason',
-            xy=(0.825,0.62), xycoords='figure fraction',
-            xytext=(0.6, 0.8), textcoords='figure fraction',size=8,
-            arrowprops=dict(arrowstyle="->"))
+	# ax.annotate('Respiratory\nVirus\nSeason',
+ #            xy=(0.825,0.62), xycoords='figure fraction',
+ #            xytext=(0.6, 0.8), textcoords='figure fraction',size=8,
+ #            arrowprops=dict(arrowstyle="->"))
 
-	ax.annotate('Infection\nIntercept',
-            xy=(0.27,0.55), xycoords='figure fraction',
-            xytext=(0.18, 0.68), textcoords='figure fraction',size=8,
-            arrowprops=dict(arrowstyle="->"))
+	# ax.annotate('Infection\nIntercept',
+ #            xy=(0.27,0.55), xycoords='figure fraction',
+ #            xytext=(0.18, 0.68), textcoords='figure fraction',size=8,
+ #            arrowprops=dict(arrowstyle="->"))
 
 	plt.savefig("adjcases.png", dpi=300)
 
-	plt.show()	
+	plt.show()
+
+def plot_cases_per_thousand(cases_df):
+	style = FtStyle()
+	fig, ax = style.set_plt_rc(plt).subplots()
+	plt.xticks(rotation=70)
+	ax.scatter(cases_df['DateString'], cases_df['Per Thousand'], marker="+", color="#778899", label="Weekly Deaths")
+
+
+	left = -0.06
+	ax.text(0.0, 1.07, 'NC DHHS Weekly Cases per Thousand Tests',
+				ha='left', va='center', transform=ax.transAxes, color="k")
+
+	ax.legend(loc='lower right');
+	ax.xaxis.set_label_coords(0.5, -0.2)
+	ax.yaxis.set_label_coords(-0.15, 0.5)
+	ax.set_ylabel("Cases (Per Thousand Tests")
+
+	plt.savefig("get_case_per_thousand.png", dpi=300)
+
+	plt.show()
+
+def plot_deaths(deaths_df):
+	style = FtStyle()
+	fig, ax = style.set_plt_rc(plt).subplots()
+	plt.xticks(rotation=70)
+	ax.scatter(deaths_df['DateString'], deaths_df['Deaths'], marker="+", color="#778899", label="Weekly Deaths")
+	ax.plot(deaths_df['DateString'], deaths_df['LOWESS'],".--",color="#7D062E", label="Weekly Deaths(LOWESS)")
+	
+
+	left = -0.06
+	ax.text(0.0, 1.07, 'NC DHHS Weekly Deaths',
+				ha='left', va='center', transform=ax.transAxes, color="k")
+
+	ax.legend(loc='upper left');
+	ax.xaxis.set_label_coords(0.5, -0.2)
+	ax.yaxis.set_label_coords(-0.15, 0.5)
+	ax.set_ylabel("Deaths")
+
+	plt.savefig("deaths.png", dpi=300)
+
+	plt.show()
 
 def main():
 	print(__name__)
 
-	#plot_test_vol(get_test_vol())
+	plot_test_vol(get_test_vol())
 
-	#plot_raw_adj_cases(case_vol_adj(), get_cases())
+	plot_raw_adj_cases(case_vol_adj(), get_cases(show_table=False))
 
 	plot_adj_cases(case_vol_adj())
 
+	plot_deaths(get_deaths(show_plot=False, show_table=False))
 
+	#plot_cases_per_thousand(get_case_per_thousand())
 
 
 
